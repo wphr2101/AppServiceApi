@@ -1,0 +1,12 @@
+bin/
+obj/
+publish-monsterasp/
+*.zip
+
+# Keep real database passwords and hosting settings local.
+appsettings*.json
+!appsettings.example.json
+
+*.user
+*.suo
+.vs/
