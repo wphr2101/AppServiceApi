@@ -1,6 +1,7 @@
 bin/
 obj/
 publish-monsterasp/
+build-verify/
 *.zip
 
 # Keep real database passwords and hosting settings local.
