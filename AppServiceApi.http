@@ -1,0 +1,11 @@
+@AppServiceApi_HostAddress = http://localhost:5196
+
+GET {{AppServiceApi_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+
+GET {{AppServiceApi_HostAddress}}/api/nations
+Accept: application/json
+
+###

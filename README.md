@@ -1,4 +1,4 @@
-# NationsApi
+# AppServiceApi
 
 ASP.NET Core Web API for reading nation data from a SQL Server `nations` table.
 
