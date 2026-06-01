@@ -25,6 +25,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngularApp");
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();
