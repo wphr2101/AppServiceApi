@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace NationsApi.Controllers;
 
@@ -17,16 +18,18 @@ public class NationsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> getAllNations()
     {
-        return await ReadNationsAsync(null);
+        return await ReadNationsAsync("dbo.usp_get_all_nations");
     }
 
     [HttpGet("search/{result}")]
     public async Task<IActionResult> getNationsBySearch(string result)
     {
-        return await ReadNationsAsync(result);
+        return await ReadNationsAsync("dbo.usp_get_nation_capital_by_value", result);
     }
 
-    private async Task<IActionResult> ReadNationsAsync(string? search)
+    private async Task<IActionResult> ReadNationsAsync(
+        string storedProcedure,
+        string? searchValue = null)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
@@ -47,26 +50,15 @@ public class NationsController : ControllerBase
             await using var connection = new SqlConnection(connectionBuilder.ConnectionString);
             await connection.OpenAsync();
 
-            const string sql = """
-                SELECT
-                    [Name],
-                    Capital,
-                    FlagImage,
-                    MapImage,
-                    Pupulation,
-                    GDP,
-                    HDI
-                FROM dbo.nations
-                WHERE @Search IS NULL
-                   OR [Name] LIKE @Search
-                   OR Capital LIKE @Search
-                ORDER BY [Name];
-                """;
+            await using var command = new SqlCommand(storedProcedure, connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
 
-            await using var command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue(
-                "@Search",
-                string.IsNullOrWhiteSpace(search) ? DBNull.Value : $"%{search}%");
+            if (searchValue is not null)
+            {
+                command.Parameters.Add("@Value", SqlDbType.VarChar, 50).Value = searchValue;
+            }
 
             await using var reader = await command.ExecuteReaderAsync();
 
