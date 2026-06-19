@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -24,7 +24,19 @@ public class NationsController : ControllerBase
     [HttpGet("search/{result}")]
     public async Task<IActionResult> getNationsBySearch(string result)
     {
-        return await ReadNationsAsync("dbo.usp_get_nation_capital_by_value", result);
+        var searchValue = result.Trim();
+
+        if (string.IsNullOrWhiteSpace(searchValue))
+        {
+            return BadRequest(new { message = "Search value is required." });
+        }
+
+        if (searchValue.Length > 50)
+        {
+            return BadRequest(new { message = "Search value must be 50 characters or fewer." });
+        }
+
+        return await ReadNationsAsync("dbo.usp_get_nation_capital_by_value", searchValue);
     }
 
     private async Task<IActionResult> ReadNationsAsync(
@@ -76,11 +88,10 @@ public class NationsController : ControllerBase
 
             return Ok(nations);
         }
-        catch (SqlException ex)
+        catch (SqlException)
         {
             return Problem(
                 title: "Could not connect to the Nations database.",
-                detail: ex.Message,
                 statusCode: StatusCodes.Status503ServiceUnavailable);
         }
     }
@@ -95,3 +106,5 @@ public record Nation(
     double Gdp,
     double Hdi
 );
+
+
