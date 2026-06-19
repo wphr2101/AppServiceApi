@@ -10,6 +10,13 @@ public enum ApiKeyValidationStatus
 public sealed record ApiKeyValidationResult(ApiKeyValidationStatus Status)
 {
     public bool IsValid => Status == ApiKeyValidationStatus.Valid;
+
+    public string PublicMessage => Status switch
+    {
+        ApiKeyValidationStatus.TokenNotConfigured => "API token is not configured.",
+        ApiKeyValidationStatus.MissingOrInvalidToken => "Invalid or missing API token.",
+        _ => string.Empty
+    };
 }
 
 public sealed class ApiKeyValidator

@@ -48,14 +48,14 @@ app.Use(async (context, next) =>
     if (validation.Status == ApiKeyValidationStatus.TokenNotConfigured)
     {
         context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-        await context.Response.WriteAsJsonAsync(new { message = "API token is not configured." });
+        await context.Response.WriteAsJsonAsync(new { message = validation.PublicMessage });
         return;
     }
 
     if (!validation.IsValid)
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        await context.Response.WriteAsJsonAsync(new { message = "Invalid or missing API token." });
+        await context.Response.WriteAsJsonAsync(new { message = validation.PublicMessage });
         return;
     }
 
