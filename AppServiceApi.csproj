@@ -11,4 +11,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings*.json" CopyToPublishDirectory="Never" />
+    <Content Remove="build-verify\**;publish-monsterasp\**" />
+    <None Remove="build-verify\**;publish-monsterasp\**" />
+  </ItemGroup>
+
 </Project>
