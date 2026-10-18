@@ -4,6 +4,10 @@ using System.Data;
 
 namespace CustomerOperations.Api.Controllers;
 
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
+[AutoValidateAntiforgeryToken]
+[ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+[RequestSizeLimit(8192)]
 [ApiController]
 [Route("api/[controller]")]
 public class InputFormController : ControllerBase
@@ -32,7 +36,7 @@ public class InputFormController : ControllerBase
                 ConnectTimeout = 15
             };
 
-            var comments = new List<VisitorComment>();
+            var comments = new List<PublicVisitorComment>();
 
             await using var connection = new SqlConnection(connectionBuilder.ConnectionString);
             await connection.OpenAsync();
@@ -46,29 +50,23 @@ public class InputFormController : ControllerBase
 
             while (await reader.ReadAsync())
             {
-                comments.Add(new VisitorComment(
+                comments.Add(new PublicVisitorComment(
                     reader.GetString(0),
-                    reader.GetString(1),
-                    reader.GetString(2),
-                    reader.GetString(3),
-                    reader.GetString(4),
-                    reader.GetString(5),
-                    reader.GetString(6),
                     reader.GetString(7)));
             }
 
             return Ok(comments);
         }
-        catch (SqlException ex)
+        catch (SqlException)
         {
             return Problem(
                 title: "Could not connect to the VisitorComments database.",
-                detail: ex.Message,
                 statusCode: StatusCodes.Status503ServiceUnavailable);
         }
     }
 
     [HttpPost("/api/insertComment")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("visitor-submissions")]
     public async Task<IActionResult> insertComment(VisitorComment comment)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -106,15 +104,16 @@ public class InputFormController : ControllerBase
 
             return Ok(new { message = "Comment inserted successfully." });
         }
-        catch (SqlException ex)
+        catch (SqlException)
         {
             return Problem(
                 title: "Could not insert the visitor comment.",
-                detail: ex.Message,
                 statusCode: StatusCodes.Status503ServiceUnavailable);
         }
     }
 }
+
+public record PublicVisitorComment(string Name, string Comments);
 
 public record VisitorComment(
     string Name,

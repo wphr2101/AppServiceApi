@@ -1,4 +1,3 @@
-using CustomerOperations.Api.Security;
 using CustomerOperations.Api.Services;
 using Microsoft.OpenApi;
 using CustomerOperations.Api.Accounts;
@@ -30,7 +29,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 });
-builder.Services.AddSingleton<ApiKeyValidator>();
 builder.Services.AddScoped<IProductCatalog, SqlProductCatalog>();
 builder.Services.AddCustomerAccounts(builder.Environment.IsDevelopment());
 builder.Services.AddScoped<IOrderStore, SqlOrderStore>();
@@ -48,47 +46,18 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAngularApp");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
-
-app.Use(async (context, next) =>
-{
-    if (!context.Request.Path.StartsWithSegments("/api") ||
-        context.Request.Path.StartsWithSegments("/api/health"))
-    {
-        await next();
-        return;
-    }
-
-    var validator = context.RequestServices.GetRequiredService<ApiKeyValidator>();
-    var configuredToken = app.Configuration["ApiAccess:Token"];
-    context.Request.Headers.TryGetValue("X-API-Key", out var providedToken);
-    var validation = validator.Validate(configuredToken, providedToken.ToString());
-
-    if (validation.Status == ApiKeyValidationStatus.TokenNotConfigured)
-    {
-        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-        await context.Response.WriteAsJsonAsync(new { message = validation.PublicMessage });
-        return;
-    }
-
-    if (!validation.IsValid)
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        await context.Response.WriteAsJsonAsync(new { message = validation.PublicMessage });
-        return;
-    }
-
-    await next();
-});
-
 app.MapControllers();
-app.MapFallbackToFile("index.html");
+app.MapFallback("/api/{**path}", () => Results.NotFound()).AllowAnonymous();
+app.MapFallbackToFile("index.html").AllowAnonymous();
 
 app.Run();
+
+public partial class Program { }

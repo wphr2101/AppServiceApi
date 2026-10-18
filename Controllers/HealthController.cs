@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 
 namespace CustomerOperations.Api.Controllers;
 
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class HealthController : ControllerBase

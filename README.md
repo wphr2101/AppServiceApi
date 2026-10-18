@@ -19,7 +19,7 @@ hashed; API keys are not user authentication.
 ## Local configuration
 
 Copy appsettings.example.json to appsettings.json and configure DefaultConnection
-and ApiAccess:Token using local settings or .NET user secrets. Real settings are
+using local settings or .NET user secrets. No shared browser API key is used. Real settings are
 ignored by Git and excluded from publishing.
 
     dotnet run --project CustomerOperations.Api.csproj --launch-profile http
@@ -51,10 +51,13 @@ The Azure Pipeline in myAngular tests both repositories, builds Angular, publish
 this API, combines the output and publishes a versioned deploy artifact. Its API
 commit is pinned in that pipeline. Generated wwwroot files are not tracked here.
 
-The deployment package must contain a browser-visible client-config.js with a
-same-origin baseUrl and the existing API access key. Never put SQL connection
-strings, publish profiles or passwords in that file. Browser keys are visible to
-the client; cookies and server-side role checks protect private operations.
+The deployment package contains a non-secret client-config.js with a same-origin
+baseUrl only. No shared API key is sent to the browser or required by the API.
+Public routes are explicitly anonymous; all other controllers require a session.
+Customer ownership and Admin roles are checked on the server, with HttpOnly
+Secure cookies and CSRF on writes. Visitor comments expose name and comment only;
+contact details are not returned. Login and comment submissions are rate limited.
+Never put SQL connection strings, publish profiles or passwords in client files.
 
 Keep Azure App Service connection strings and settings in Azure. Publish output
 does not include appsettings files. IIS web.config must reference

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CustomerOperations.Api.Controllers;
 
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 [ApiController]
 [Route("api/products")]
 public class ProductsController : ControllerBase

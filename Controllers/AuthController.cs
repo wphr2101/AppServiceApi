@@ -20,9 +20,11 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
     LoginTimingHash timingHash, IAntiforgery antiforgery, ILogger<AuthController> logger) : Controller
 {
     [HttpGet("csrf")]
+    [AllowAnonymous]
     public IActionResult Csrf() => Ok(new { requestToken = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
 
     [HttpPost("register")]
+    [AllowAnonymous]
     [EnableRateLimiting("account-attempts")]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct)
     {
@@ -35,6 +37,7 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     [EnableRateLimiting("account-attempts")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken ct)
     {
@@ -68,6 +71,7 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
     }
 
     [HttpPost("logout")]
+    [AllowAnonymous]
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

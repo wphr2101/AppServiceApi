@@ -4,6 +4,7 @@ using System.Data;
 
 namespace CustomerOperations.Api.Controllers;
 
+[Microsoft.AspNetCore.Authorization.AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class NationsController : ControllerBase
