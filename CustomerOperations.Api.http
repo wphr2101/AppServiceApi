@@ -1,0 +1,11 @@
+@CustomerOperationsApi_HostAddress = http://localhost:5001
+
+GET {{CustomerOperationsApi_HostAddress}}/swagger/v1/swagger.json
+Accept: application/json
+
+###
+
+GET {{CustomerOperationsApi_HostAddress}}/api/nations
+Accept: application/json
+
+###

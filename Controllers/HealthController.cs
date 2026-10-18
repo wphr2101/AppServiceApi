@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
-namespace AppServiceApi.Controllers;
+namespace CustomerOperations.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -24,7 +24,7 @@ public class HealthController : ControllerBase
         return Ok(new
         {
             status = "Healthy",
-            service = "AppServiceApi",
+            service = "CustomerOperations.Api",
             environment = _environment.EnvironmentName,
             utcTime = DateTime.UtcNow
         });

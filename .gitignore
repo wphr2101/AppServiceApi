@@ -11,3 +11,7 @@ appsettings*.json
 *.user
 *.suo
 .vs/
+
+# Frontend output is built by the release pipeline, not committed with browser configuration.
+wwwroot/*
+!wwwroot/favicon.ico

@@ -1,4 +1,4 @@
-namespace AppServiceApi.Security;
+namespace CustomerOperations.Api.Security;
 
 public enum ApiKeyValidationStatus
 {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
-namespace AppServiceApi.Controllers;
+namespace CustomerOperations.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
