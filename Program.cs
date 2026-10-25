@@ -3,6 +3,7 @@ using Microsoft.OpenApi;
 using CustomerOperations.Api.Accounts;
 using CustomerOperations.Api.Orders;
 using CustomerOperations.Api.Admin;
+using CustomerOperations.Api.Help;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddScoped<IProductCatalog, SqlProductCatalog>();
 builder.Services.AddCustomerAccounts(builder.Environment.IsDevelopment());
 builder.Services.AddScoped<IOrderStore, SqlOrderStore>();
 builder.Services.AddScoped<IAdminStore, SqlAdminStore>();
+builder.Services.AddLogisticsHelp(builder.Configuration);
 
 var app = builder.Build();
  
