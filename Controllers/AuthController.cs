@@ -21,19 +21,32 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
 {
     [HttpGet("csrf")]
     [AllowAnonymous]
-    public IActionResult Csrf() => Ok(new { requestToken = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
+    public IActionResult Csrf() =>
+        Ok(new { requestToken = antiforgery.GetAndStoreTokens(HttpContext).RequestToken });
 
     [HttpPost("register")]
     [AllowAnonymous]
     [EnableRateLimiting("account-attempts")]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct)
     {
-        if (User.Identity?.IsAuthenticated == true) return Conflict(new { message = "Sign out before creating another account." });
-        var clean = request with { UserName = request.UserName.Trim(), Name = request.Name.Trim(), Email = request.Email.Trim(), Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim() };
+        if (User.Identity?.IsAuthenticated == true)
+            return Conflict(new {
+                message = "Sign out before creating another account."
+            });
+        var clean = request with {
+            UserName = request.UserName.Trim(),
+            Name = request.Name.Trim(),
+            Email = request.Email.Trim(),
+            Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim()
+        };
         var placeholder = new AccountProfile(0, clean.UserName, 0, clean.Name, clean.Email, clean.Phone);
-        var profile = await store.CreateAsync(clean, hasher.HashPassword(placeholder, clean.Password), ct);
+        var profile = await store.CreateAsync(
+            clean, hasher.HashPassword(placeholder, clean.Password), ct
+        );
         // Registration does not automatically sign in; login is a separate, explicit action.
-        return StatusCode(StatusCodes.Status201Created, new { message = "Account created. Sign in to continue." });
+        return StatusCode(StatusCodes.Status201Created, new {
+            message = "Account created. Sign in to continue."
+        });
     }
 
     [HttpPost("login")]
@@ -41,11 +54,16 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
     [EnableRateLimiting("account-attempts")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken ct)
     {
-        if (User.Identity?.IsAuthenticated == true) return Conflict(new { message = "Sign out before switching accounts." });
+        if (User.Identity?.IsAuthenticated == true)
+            return Conflict(new {
+                message = "Sign out before switching accounts."
+            });
         var account = await store.FindAsync(request.UserName.Trim(), ct);
         var verification = hasher.VerifyHashedPassword(account?.Profile ?? timingHash.User, account?.PasswordHash ?? timingHash.Hash, request.Password);
         if (account is null || verification == PasswordVerificationResult.Failed)
-            return Unauthorized(new { message = "Invalid username or password." });
+            return Unauthorized(new {
+                message = "Invalid username or password."
+            });
         if (verification == PasswordVerificationResult.SuccessRehashNeeded)
             await store.UpdateHashAsync(account.Profile.UserId, account.PasswordHash, hasher.HashPassword(account.Profile, request.Password), ct);
         var identity = new ClaimsIdentity(new[] {
@@ -53,7 +71,10 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
             new Claim(ClaimTypes.Name, account.Profile.UserName),
             new Claim(ClaimTypes.Role, "Customer")
         }, CookieAuthenticationDefaults.AuthenticationScheme);
-        if (account.Profile.Role == "Admin") identity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+        if (account.Profile.Role == "Admin")
+        {
+            identity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
+        }
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = false, AllowRefresh = false });
         return Ok(account.Profile);
@@ -63,7 +84,10 @@ public sealed class AuthController(IAccountStore store, IPasswordHasher<AccountP
     [HttpGet("me")]
     public async Task<IActionResult> Me(CancellationToken ct)
     {
-        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) return Unauthorized();
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+        {
+            return Unauthorized();
+        }
         var profile = await store.GetAsync(id, ct);
         if (profile is not null) return Ok(profile);
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
